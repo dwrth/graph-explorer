@@ -14,6 +14,7 @@ import {
 } from "@/core/ConfigurationProvider/useConfiguration";
 import { MISSING_DISPLAY_VALUE } from "@/utils/constants";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEdgeStylingContext } from "@/core/StateProvider/EdgeStylingContext";
 
 const LINE_PATTERN = {
   solid: undefined,
@@ -28,6 +29,7 @@ const useGraphStyles = () => {
   const [styles, setStyles] = useState<GraphProps["styles"]>({});
   const displayEdges = useDisplayEdgesInCanvas();
   const client = useQueryClient();
+  const { allStyling } = useEdgeStylingContext();
 
   const deferredVtConfigs = useDeferredValue(vtConfigs);
   const deferredEtConfigs = useDeferredValue(etConfigs);
@@ -59,6 +61,9 @@ const useGraphStyles = () => {
       for (const etConfig of deferredEtConfigs) {
         const et = etConfig?.type;
 
+        // Get user styling preferences for this edge type
+        const userEdgeStyle = allStyling.edges?.find(edge => edge.type === et);
+
         let label = textTransform(et);
         if (label.length > 20) {
           label = label.substring(0, 17) + "...";
@@ -68,6 +73,12 @@ const useGraphStyles = () => {
           label,
           "source-distance-from-node": 0,
           "target-distance-from-node": 0,
+        };
+
+        // Merge configuration with user styling preferences
+        const mergedConfig = {
+          ...etConfig,
+          ...userEdgeStyle,
         };
 
         styles[`edge[type="${et}"]`] = {
@@ -80,25 +91,27 @@ const useGraphStyles = () => {
               ? displayEdge.displayName
               : MISSING_DISPLAY_VALUE;
           },
-          color: new Color(etConfig?.labelColor || "#17457b").isDark()
+          color: new Color(mergedConfig?.labelColor || "#17457b").isDark()
             ? "#FFFFFF"
             : "#000000",
-          "line-color": etConfig.lineColor,
+          "line-color": mergedConfig.lineColor,
           "line-style":
-            etConfig.lineStyle === "dotted" ? "dashed" : etConfig.lineStyle,
-          "line-dash-pattern": etConfig.lineStyle
-            ? LINE_PATTERN[etConfig.lineStyle]
+            mergedConfig.lineStyle === "dotted"
+              ? "dashed"
+              : mergedConfig.lineStyle,
+          "line-dash-pattern": mergedConfig.lineStyle
+            ? LINE_PATTERN[mergedConfig.lineStyle]
             : undefined,
-          "source-arrow-shape": etConfig.sourceArrowStyle,
-          "source-arrow-color": etConfig.lineColor,
-          "target-arrow-shape": etConfig.targetArrowStyle,
-          "target-arrow-color": etConfig.lineColor,
-          "text-background-opacity": etConfig?.labelBackgroundOpacity,
-          "text-background-color": etConfig?.labelColor,
-          "text-border-width": etConfig?.labelBorderWidth,
-          "text-border-color": etConfig?.labelBorderColor,
-          "text-border-style": etConfig?.labelBorderStyle,
-          width: etConfig.lineThickness,
+          "source-arrow-shape": mergedConfig.sourceArrowStyle,
+          "source-arrow-color": mergedConfig.lineColor,
+          "target-arrow-shape": mergedConfig.targetArrowStyle,
+          "target-arrow-color": mergedConfig.lineColor,
+          "text-background-opacity": mergedConfig?.labelBackgroundOpacity,
+          "text-background-color": mergedConfig?.labelColor,
+          "text-border-width": mergedConfig?.labelBorderWidth,
+          "text-border-color": mergedConfig?.labelBorderColor,
+          "text-border-style": mergedConfig?.labelBorderStyle,
+          width: mergedConfig.lineThickness,
           "source-distance-from-node": 0,
           "target-distance-from-node": 0,
         };
@@ -112,6 +125,7 @@ const useGraphStyles = () => {
     deferredVtConfigs,
     displayEdges,
     textTransform,
+    allStyling,
   ]);
 
   return styles;

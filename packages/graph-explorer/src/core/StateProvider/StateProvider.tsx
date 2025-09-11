@@ -12,6 +12,7 @@ import { allGraphSessionsAtom } from "./graphSession";
 import { schemaAtom } from "./schema";
 import { userStylingAtom } from "./userPreferences";
 import { userLayoutAtom } from "./userLayout";
+import { EdgeStylingProvider } from "./EdgeStylingContext";
 
 export default function StateProvider({
   children,
@@ -19,7 +20,9 @@ export default function StateProvider({
   return (
     <ErrorBoundary FallbackComponent={AppErrorPage}>
       <Suspense fallback={<AppLoadingPage />}>
-        <PreloadLocalForageData>{children}</PreloadLocalForageData>
+        <EdgeStylingProvider>
+          <PreloadLocalForageData>{children}</PreloadLocalForageData>
+        </EdgeStylingProvider>
       </Suspense>
     </ErrorBoundary>
   );

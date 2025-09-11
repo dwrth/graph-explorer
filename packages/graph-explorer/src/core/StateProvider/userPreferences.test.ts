@@ -92,14 +92,14 @@ describe("useEdgeStyling", () => {
     expect(result.current.edgeStyle).toEqual(style);
   });
 
-  it("should insert the edge style when none exist", async () => {
+  it("should insert the edge style when none exist", () => {
     const dbState = new DbState();
     const { result } = renderHookWithJotai(
       () => useEdgeStyling("test"),
       snapshot => dbState.applyTo(snapshot)
     );
 
-    await act(() => result.current.setEdgeStyle({ lineColor: "red" }));
+    act(() => result.current.setEdgeStyle({ lineColor: "red" }));
 
     expect(result.current.edgeStyle).toEqual({
       type: "test",
@@ -107,17 +107,17 @@ describe("useEdgeStyling", () => {
     });
   });
 
-  it("should update the existing style, merging new styles", async () => {
+  it("should update the existing style, merging new styles", () => {
     const dbState = new DbState();
     const { result } = renderHookWithJotai(
       () => useEdgeStyling("test"),
       snapshot => dbState.applyTo(snapshot)
     );
 
-    await act(() =>
+    act(() =>
       result.current.setEdgeStyle({ lineColor: "red", labelColor: "green" })
     );
-    await act(() => result.current.setEdgeStyle({ labelColor: "blue" }));
+    act(() => result.current.setEdgeStyle({ labelColor: "blue" }));
 
     expect(result.current.edgeStyle).toEqual({
       type: "test",
@@ -126,15 +126,15 @@ describe("useEdgeStyling", () => {
     });
   });
 
-  it("should reset the edge style", async () => {
+  it("should reset the edge style", () => {
     const dbState = new DbState();
     const { result } = renderHookWithJotai(
       () => useEdgeStyling("test"),
       snapshot => dbState.applyTo(snapshot)
     );
 
-    await act(() => result.current.setEdgeStyle({ labelColor: "blue" }));
-    await act(() => result.current.resetEdgeStyle());
+    act(() => result.current.setEdgeStyle({ labelColor: "blue" }));
+    act(() => result.current.resetEdgeStyle());
 
     expect(result.current.edgeStyle).toBeUndefined();
   });
